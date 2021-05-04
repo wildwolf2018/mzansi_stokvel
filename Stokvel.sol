@@ -56,7 +56,7 @@ contract Stokvel {
         totalFunds = address(this).balance;
     }
     
-	function payDues(address _payer) public payable {
+    function payDues(address _payer) public payable {
       require(msg.value == 2 ether && members[_payer].payDate != 0);
       if(members[_payer].isInArrears){
           totalFunds = address(this).balance + msg.value;
