@@ -1,71 +1,60 @@
 pragma solidity ^0.8.0;
 
 contract Stokvel {
-    Member[] public members;
+    mapping(address => Member) members;
+    address payable[] public accounts;
     Cause[] public causes;
     
-    uint public maxMemberLimit = 5;
     uint public totalMembers;
     uint public payeeIndex = 0;
-    uint public startPayDate;
+    uint public creationDate;
+    uint public totalFunds;
+    uint public donationDate;
 
     address public chairperson;
     
     
     struct Member{
-        address account;
         uint payDate;
         bool isInArrears;
+        bool isPaid;
         bool voted;
     }
     
     struct Cause{
         string name;
         uint voteCount;
+        address account;
     }
     
     constructor(
-        uint _limit,
-        uint _payDate,
-        address[] memory _members,
-        string[] memory _causes
-        //uint _causeEndDate;
+        address payable[] memory  _accounts,
+        string[] memory _causes,
+        address payable[] memory _causeAccounts,
+        uint _donationDate
+       
     ) public
     {
         chairperson = msg.sender;
-        maxMemberLimit = _limit;
-        startPayDate = block.timestamp;
-        totalMembers = _members.length;
+        creationDate = block.timestamp;
+        totalMembers = _accounts.length;
+        donationDate = _donationDate;
         
-        for(uint i = 0; i < _members.length; i++){
-            uint payDate = startPayDate + 5 * 1 minutes;
-            members.push(Member(_members[i], payDate, true, false));
+        for(uint i = 0; i < _accounts.length; i++){
+            uint payDate = creationDate + (i + 1) * 1 minutes;
+            members[_accounts[i]] = Member(payDate, true, false, false);
+            accounts.push(_accounts[i]);
          }
        
         for(uint i = 0; i < _causes.length; i++){
-            causes.push(Cause(_causes[i], 0));
+            if(donationDate <= creationDate) {
+                revert();
+            }
+            causes.push(Cause(_causes[i], 0, _causeAccounts[i]));
         }
         
+        totalFunds = address(this).balance;
     }
     
-    function payDues() public {
-        require(msg.value == 1, "Only 1 ether must paid");
-        require(members[msg.sender].isInArrears, "Member account is not in arrears");
-        
-        address(this).transfer(msg.value);
-        members[msg.sender].isInArrears = false;
-        
-    }
-    
-    function register(address newMember) public {
-         require(msg.value == 1, "Only 1 ether must paid");
-        
-        totalMembers++;
-        if(totalMembers > maxMemberLimit){
-            revert();
-        }
-        
-        uint memberPayDate = members[members.length - 1].payDate + 5 * 1 minutes;
-        members.push(Member(address(msg.sender), memberPayDate, false, false));
-    }
+  
 }
