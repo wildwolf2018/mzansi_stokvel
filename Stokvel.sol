@@ -61,7 +61,28 @@ contract Stokvel {
       if(members[_payer].isInArrears){
           members[_payer].isInArrears = false;
           payable(address (this)).transfer(msg.value);
-		  totalFunds = address(this).balance;
+	  totalFunds = address(this).balance;
+      }
+   }
+   
+    function payMember() public payable {
+      require(msg.sender == chairperson, "Only chairperson authorised to make payements");
+   
+      payeeIndex = nextPayee();
+      address payable beneficiary = accounts[payeeIndex];
+     
+      if(!members[beneficiary].isPaid && !members[beneficiary].isInArrears){
+        members[beneficiary].isPaid = true;
+        members[beneficiary].isInArrears = true;    
+       
+        uint payment = totalMembers * 1 ether;
+        assert(payment < address(this).balance);
+        totalFunds = address(this).balance - payment;
+        beneficiary.transfer(payment);
+        
+        if(payeeIndex >= accounts.length - 1){
+          reset();
+        }
       }
   }
   
