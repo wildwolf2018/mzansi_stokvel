@@ -10,6 +10,7 @@ contract Stokvel {
     uint public creationDate;
     uint public totalFunds;
     uint public donationDate;
+    bool public hasDonated = false;
 
     address public chairperson;
     
@@ -24,8 +25,13 @@ contract Stokvel {
     struct Cause{
         string name;
         uint voteCount;
-        address account;
+        address payable account;
     }
+    
+    event Payment(address _payer, uint amountOwed);
+    event VoteCast(address voter, string causeName);
+    event MemberPaid(address beneficiary, uint payment);
+    event DonationMade(string causeName, addresss causeAccount, uintdonation);
     
     constructor(
         address payable[] memory  _accounts,
@@ -62,6 +68,7 @@ contract Stokvel {
           members[_payer].isInArrears = false;
           payable(address (this)).transfer(msg.value);
 	  totalFunds = address(this).balance;
+	  emit Payment(_payer, msg.value);
       }
    }
    
@@ -80,6 +87,7 @@ contract Stokvel {
         assert(payment < address(this).balance);
         totalFunds = address(this).balance - payment;
         beneficiary.transfer(payment);
+	emit MemberPaid(beneficiary, payment);
         
         if(payeeIndex >= accounts.length - 1){
           reset();
@@ -125,7 +133,28 @@ contract Stokvel {
    }
  }
 
-
-
+ function payCharity() public payable {
+      require(msg.sender == chairperson, "Only chairperson can make donation");
+      require(block.timestamp > donationDate, "Donation date has not yet passed");
+       
+      if(!hasDonated){
+          hasDonated = true;
+          uint maxVotesIndex = 0;
+          uint maxVotes = causes[0].voteCount;
+           
+          for(uint i = 0; i < causes.length; i++){
+	    if(causes[i].voteCount > maxVotes){
+                maxVotesIndex = i;
+            }
+          }
+           
+          uint donation = address(this).balance / 5;
+          assert(address(this).balance > donation);
+          totalFunds = address(this).balance + donation;
+          causes[maxVotesIndex].account.transfer(donation);
+          emit DonationMade(causes[maxVotesIndex].name, causes[maxVotesIndex].account, donation);
+      }
+  }
+    
 
 }
