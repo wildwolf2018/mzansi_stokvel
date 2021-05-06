@@ -114,7 +114,16 @@ contract Stokvel {
      return 0;
   }
   
-
+ function vote(address voter, uint _causeIndex) public{
+   require(members[voter].payDate != 0, "Only members can vote");
+   require(!members[voter].voted && (_causeIndex >= 0 && _causeIndex < causes.length));
+       
+   if(block.timestamp <= donationDate){
+      causes[_causeIndex].voteCount = causes[_causeIndex].voteCount + 1;
+      members[voter].voted = true;
+      emit VoteCast(voter, causes[_causeIndex].name);
+   }
+ }
 
 
 
