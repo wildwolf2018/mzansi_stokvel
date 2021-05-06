@@ -84,6 +84,21 @@ contract Stokvel {
           reset();
         }
       }
-  }
+      
+  function reset() private{
+     if(payeeIndex >= accounts.length - 1){
+       payeeIndex = 0;
+       uint lasyPayDate = members[accounts[accounts.length-1]].payDate;
+       for(uint i = 0; i < accounts.length; i++){
+           members[accounts[i]].isPaid = false;
+           members[accounts[i]].payDate = lasyPayDate + (i+1) * 1 minutes;
+       }
+     }
+   }
   
+
+
+
+
+
 }
