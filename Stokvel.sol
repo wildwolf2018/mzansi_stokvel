@@ -75,7 +75,8 @@ contract Stokvel {
         members[beneficiary].isPaid = true;
         members[beneficiary].isInArrears = true;    
        
-        uint payment = totalMembers * 1 ether;
+   
+     uint payment = totalMembers * 1 ether;
         assert(payment < address(this).balance);
         totalFunds = address(this).balance - payment;
         beneficiary.transfer(payment);
@@ -94,7 +95,24 @@ contract Stokvel {
            members[accounts[i]].payDate = lasyPayDate + (i+1) * 1 minutes;
        }
      }
-   }
+  }
+  
+  function nextPayee() private view returns(uint){
+      address prevPayee;
+      for(uint i = 0; i < accounts.length; i++){
+         if(i == 0){
+             prevPayee = accounts[accounts.length-1];
+         }else{
+	     prevPayee = accounts[i-1];
+         }
+           
+         address beneficiary = accounts[i];
+         if(block.timestamp > members[prevPayee].payDate && block.timestamp <= members[beneficiary].payDate){
+            return i;   
+         }
+     }
+     return 0;
+  }
   
 
 
