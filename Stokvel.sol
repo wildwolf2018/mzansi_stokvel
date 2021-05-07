@@ -139,7 +139,7 @@ contract Stokvel {
       require(msg.sender == chairperson, "Only chairperson can make donation");
       require(block.timestamp > donationDate, "Donation date has not yet passed");
       
-      uint donation = address(this).balance / 10;
+      uint donation = address(this).balance / 20;
       if(!hasDonated && address(this).balance > donation){
           hasDonated = true;
           uint maxVotesIndex = 0;
