@@ -76,24 +76,26 @@ contract Stokvel {
       require(msg.sender == chairperson, "Only chairperson authorised to make payements");
    
       payeeIndex = nextPayee();
-      address payable beneficiary = accounts[payeeIndex];
-     
-      if(!members[beneficiary].isPaid && !members[beneficiary].isInArrears){
-        members[beneficiary].isPaid = true;
-        members[beneficiary].isInArrears = true;    
-       
-   
-     uint payment = totalMembers * 1 ether;
-        assert(payment < address(this).balance);
-        totalFunds = address(this).balance - payment;
-        beneficiary.transfer(payment);
-	emit MemberPaid(beneficiary, payment);
-        
-        if(payeeIndex >= accounts.length - 1){
-          reset();
+      if(hasFunds()){
+        address payable beneficiary = accounts[payeeIndex];
+
+        if(!members[beneficiary].isPaid && !members[beneficiary].isInArrears){
+	  members[beneficiary].isPaid = true;
+	  members[beneficiary].isInArrears = true;    
+
+	  uint payment = totalMembers * 1 ether;
+	  assert(payment < address(this).balance);
+	  totalFunds = address(this).balance - payment;
+	  beneficiary.transfer(payment);
+	  emit MemberPaid(beneficiary, payment);
+
+	  if(payeeIndex >= accounts.length - 1){
+	    reset();
+	  }
         }
-      }
-      
+     }
+    }
+    
   function reset() private{
      if(payeeIndex >= accounts.length - 1){
        payeeIndex = 0;
@@ -136,8 +138,9 @@ contract Stokvel {
  function payCharity() public payable {
       require(msg.sender == chairperson, "Only chairperson can make donation");
       require(block.timestamp > donationDate, "Donation date has not yet passed");
-       
-      if(!hasDonated){
+      
+      uint donation = address(this).balance / 10;
+      if(!hasDonated && address(this).balance > donation){
           hasDonated = true;
           uint maxVotesIndex = 0;
           uint maxVotes = causes[0].voteCount;
@@ -148,13 +151,24 @@ contract Stokvel {
             }
           }
            
-          uint donation = address(this).balance / 5;
           assert(address(this).balance > donation);
           totalFunds = address(this).balance + donation;
           causes[maxVotesIndex].account.transfer(donation);
           emit DonationMade(causes[maxVotesIndex].name, causes[maxVotesIndex].account, donation);
       }
   }
-    
+  
+  function hasFunds() private returns(bool) {
+      uint minBalance = totalMembers * 1 ether;
+      if(payeeIndex == 0 && (address(this).balance < totalMembers * minBalance)){
+          uint startTime = block.timestamp;
+          
+          for(uint i = 0; i < accounts.length; i++){
+            members[accounts[i]].payDate = startTime + (i + 1) * 1 minutes;
+         }
+         return false;
+      }
+      return true;
+  }
 
 }
