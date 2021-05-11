@@ -1,0 +1,40 @@
+﻿const Stokvel = artifacts.require(‘Stokvel’)
+
+
+require(‘chai’).
+.use(require(‘chai-as-promised’))
+.should()
+
+
+let stokvel
+contract(‘Stokvel’, (accounts) => {
+    let stokvel
+    before( async () => {
+        Stokvel = await Stokvel.new()
+    })
+    describe(‘Stokvel deployment’, async () => {
+        it(‘has right number of members’, async () => {
+            const totalMembers = await stokvel.totalMembers()
+            assert.equal(totalMembers, 3, ‘Stokvel does not have correct number of members’)
+        })
+
+
+        it(‘has right number of causes’, async () => {
+            const totalCauses = await stokvel.causes()
+            assert.equal(totalCauses.length, 3, ‘Stokvel does not have correct number of causes’)
+        })
+
+
+         it(‘has cause name’, async () => {
+            const firstCause = await stokvel.causes()[0]
+            assert.equal(firstCause, ‘Othandweni Children’s Home’, ‘Incorrect cause name’’)
+        })
+
+
+        it(‘has correct chairperson address’’, async () => {
+            const chairAddress = await stokvel.accounts()[0]
+            assert.equal(chairAddress, ‘0x5B38Da6a701c568545dCfcB03FcB875f56beddC4’, ‘Incorrect chairperson address’’)
+        })       
+
+    })
+})
