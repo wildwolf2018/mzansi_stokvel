@@ -31,7 +31,7 @@ contract Stokvel {
     event Payment(address _payer, uint amountOwed);
     event VoteCast(address voter, string causeName);
     event MemberPaid(address beneficiary, uint payment);
-    event DonationMade(string causeName, addresss causeAccount, uintdonation);
+    event DonationMade(string causeName, address causeAccount, uint donation);
     
     constructor(
         address payable[] memory  _accounts,
