@@ -62,13 +62,13 @@ contract Stokvel {
         totalFunds = address(this).balance;
     }
     
-    function payDues(address _payer) public payable {
-      require(msg.value == 2 ether && members[_payer].payDate != 0);
-      if(members[_payer].isInArrears){
-          members[_payer].isInArrears = false;
+    function payDues() public payable {
+      require(msg.value == 2 ether && members[msg.sender].payDate != 0);
+      if(members[msg.sender].isInArrears){
+          members[msg.sender].isInArrears = false;
           payable(address (this)).transfer(msg.value);
 	  totalFunds = address(this).balance;
-	  emit Payment(_payer, msg.value);
+	  emit Payment(msg.sender, msg.value);
       }
    }
    
