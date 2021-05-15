@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: GPL-3.0
+    
+pragma solidity >=0.4.22 <0.9.0;
+import "remix_tests.sol"; // this import is automatically injected by Remix.
+import "remix_accounts.sol";
+import "../contracts/Stokvel.sol";
+
+// File name has to end with '_test.sol', this file can contain more than one testSuite contracts
+contract StokvelTest {
+
+    address payable[] accounts = [payable(TestsAccounts.getAccount(0)), payable(TestsAccounts.getAccount(1)), 
+                            payable(TestsAccounts.getAccount(2))];
+    string[] charityCauses = ["othandweni", "cheshire"];
+    address payable[] causesAccounts = [payable(TestsAccounts.getAccount(3)), payable(TestsAccounts.getAccount(4)), 
+                            payable(TestsAccounts.getAccount(2))];
+                            
+    uint donationDate =  1620923922;
+    Stokvel stokvelTest;
+    
+    function beforeAll() public {
+        stokvelTest = new Stokvel(accounts, charityCauses, causesAccounts, donationDate);
+    }
+
+    function testInitialFundsEqualZero() public {
+        Assert.equal(stokvelTest.totalFunds(), 0, "Initial funds must be zero");
+    }
+    
+    function hasCorrectTotalMembers() public {
+        Assert.equal(stokvelTest.totalMembers(), accounts.length, "Incorrect number of members");
+    }
+    
+    function hasCorrectCorrectTotalCauses() public {
+        Assert.equal(stokvelTest.getNumberOfCauses() , charityCauses.length, "Incorrect number of causes");
+    }
+    
+    function hasCorrectCausesNames() public {
+        string memory cause1 = stokvelTest.getCauseName(0);
+        string memory cause2 = stokvelTest.getCauseName(1);
+        
+        Assert.equal(cause1 , charityCauses[0], "Incorrect first cause name");
+        Assert.equal(cause2 , charityCauses[1], "Incorrect second cause name");
+    }
+    
+    function hasValidDonationDate() public {
+        Assert.greaterThan(stokvelTest.donationDate(), block.timestamp, "Invalid donation date");
+    }
+    
+}
+
