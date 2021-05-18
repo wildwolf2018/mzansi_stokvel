@@ -170,5 +170,13 @@ contract Stokvel {
       }
       return true;
   }
+  
+  function getNumberOfCauses() public view returns(uint){
+      return causes.length;
+  }
+
+  function getCauseName(uint index) public returns(string memory){
+      return causes[index].name;
+  }
 
 }
