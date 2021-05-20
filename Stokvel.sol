@@ -11,7 +11,7 @@ contract Stokvel {
     uint public totalFunds;
     uint public donationDate;
     bool public hasDonated = false;
-
+    uint public lastPayDate;
     address public chairperson;
     
     
@@ -45,7 +45,8 @@ contract Stokvel {
         creationDate = block.timestamp;
         totalMembers = _accounts.length;
         donationDate = _donationDate;
-        
+        lastPayDate = creationDate;
+	
         for(uint i = 0; i < _accounts.length; i++){
             uint payDate = creationDate + (i + 1) * 14 days;
             members[_accounts[i]] = Member(payDate, true, false, false);
@@ -71,7 +72,7 @@ contract Stokvel {
          members[payee].isInArrears = false;
          payable(address (this)).transfer(msg.value);
 	     totalFunds = address(this).balance;
-	     emit Payment(_payee, msg.value);
+	     emit Payment(payee, msg.value);
       }
    }
    
