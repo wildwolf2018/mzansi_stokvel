@@ -47,7 +47,7 @@ contract Stokvel {
         donationDate = _donationDate;
         
         for(uint i = 0; i < _accounts.length; i++){
-            uint payDate = creationDate + (i + 1) * 1 minutes;
+            uint payDate = creationDate + (i + 1) * 14 days;
             members[_accounts[i]] = Member(payDate, true, false, false);
             accounts.push(_accounts[i]);
          }
@@ -62,13 +62,16 @@ contract Stokvel {
         totalFunds = address(this).balance;
     }
     
-    function payDues(address _payee) public payable {
-      require(msg.value == 2 ether && members[_payee].payDate != 0);
-      if(members[_payee].isInArrears){
-          members[_payee].isInArrears = false;
-          payable(address (this)).transfer(msg.value);
-	  totalFunds = address(this).balance;
-	  emit Payment(_payee, msg.value);
+    function payDues() public payable {
+      address payable payee = payable(msg.sender);
+      require(msg.value == (2 ether), "You can only send 2 ether");
+      require(members[payee].payDate != 0, "Only members can pay their dues");
+      
+      if(members[payee].isInArrears){
+         members[payee].isInArrears = false;
+         payable(address (this)).transfer(msg.value);
+	     totalFunds = address(this).balance;
+	     emit Payment(_payee, msg.value);
       }
    }
    
@@ -87,6 +90,8 @@ contract Stokvel {
 	  assert(payment < address(this).balance);
 	  totalFunds = address(this).balance - payment;
 	  beneficiary.transfer(payment);
+	  lastPayDate = members[beneficiary].payDate;
+	  
 	  emit MemberPaid(beneficiary, payment);
 
 	  if(payeeIndex >= accounts.length - 1){
@@ -102,7 +107,7 @@ contract Stokvel {
        uint lasyPayDate = members[accounts[accounts.length-1]].payDate;
        for(uint i = 0; i < accounts.length; i++){
            members[accounts[i]].isPaid = false;
-           members[accounts[i]].payDate = lasyPayDate + (i+1) * 1 minutes;
+           members[accounts[i]].payDate = lastPayDate + (i+1) * 14 days;
        }
      }
   }
@@ -110,14 +115,8 @@ contract Stokvel {
   function nextPayee() private view returns(uint){
       address prevPayee;
       for(uint i = 0; i < accounts.length; i++){
-         if(i == 0){
-             prevPayee = accounts[accounts.length-1];
-         }else{
-	     prevPayee = accounts[i-1];
-         }
-           
          address beneficiary = accounts[i];
-         if(block.timestamp > members[prevPayee].payDate && block.timestamp <= members[beneficiary].payDate){
+         if(block.timestamp > lastPayDate && block.timestamp <= members[beneficiary].payDate){
             return i;   
          }
      }
@@ -164,7 +163,7 @@ contract Stokvel {
           uint startTime = block.timestamp;
           
           for(uint i = 0; i < accounts.length; i++){
-            members[accounts[i]].payDate = startTime + (i + 1) * 1 minutes;
+            members[accounts[i]].payDate = startTime + (i + 1) * 14 days;
          }
          return false;
       }
