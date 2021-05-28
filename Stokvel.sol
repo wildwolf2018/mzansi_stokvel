@@ -72,6 +72,8 @@ contract Stokvel {
       if(members[payee].isInArrears){
          members[payee].isInArrears = false;	 
 	 emit Payment(payee, msg.value);
+      }else{
+        revert();
       }
       contractBalance = address(this).balance;
    }
