@@ -12,6 +12,10 @@ contract Stokvel {
     uint public donationDate;
     bool public hasDonated = false;
     uint public lastPayDate;
+    uint public contractBalance;
+    unit public membershipFee = 2000000000000000000 wei;
+    uint public paymentToMember;
+    
     address public chairperson;
     
     
@@ -46,6 +50,11 @@ contract Stokvel {
         totalMembers = _accounts.length;
         donationDate = _donationDate;
         lastPayDate = creationDate;
+	paymentToMember = totalMembers * 1 ether;
+	
+	if(donationDate <= creationDate) {
+                revert();
+        }
 	
         for(uint i = 0; i < _accounts.length; i++){
             uint payDate = creationDate + (i + 1) * 14 days;
@@ -54,26 +63,20 @@ contract Stokvel {
          }
        
         for(uint i = 0; i < _causes.length; i++){
-            if(donationDate <= creationDate) {
-                revert();
-            }
             causes.push(Cause(_causes[i], 0, _causeAccounts[i]));
         }
-        
-        totalFunds = address(this).balance;
     }
     
-    function payDues() public payable {
-      address payable payee = payable(msg.sender);
-      require(msg.value == (2 ether), "You can only send 2 ether");
+    function payDues(uint _membershipFee) public payable {
+      address payee = msg.sender;
+      require(msg.value == membershipFee && msg.value == _membershipFee, "You can only send 2 ether");
       require(members[payee].payDate != 0, "Only members can pay their dues");
       
       if(members[payee].isInArrears){
-         members[payee].isInArrears = false;
-         payable(address (this)).transfer(msg.value);
-	     totalFunds = address(this).balance;
-	     emit Payment(payee, msg.value);
+         members[payee].isInArrears = false;	 
+	 emit Payment(payee, msg.value);
       }
+      contractBalance = address(this).balance;
    }
    
     function payMember() public payable {
